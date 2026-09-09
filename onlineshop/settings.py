@@ -82,8 +82,12 @@ WSGI_APPLICATION = 'onlineshop.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'onlineshop',          # PostgreSQL'da ochilgan baza nomi
+        'USER': 'postgres',       # Baza egasi (masalan: postgres yoki o'zingiz ochgan user)
+        'PASSWORD': 'password',    # User paroli
+        'HOST': 'localhost',           # Lokal ishlayotgan bo'lsa
+        'PORT': '5432',                # PostgreSQL standart porti
     }
 }
 

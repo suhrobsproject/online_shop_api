@@ -27,8 +27,6 @@ urlpatterns = [
     # Shu 3 ta qatorni qo'shdik:
     path('users/', include('users.urls')),
     path('reviews/', include('reviews.urls')),
-    path('', include('products.urls')), # Domen bo'sh yozilganda bosh sahifa ochilishi uchun
-    
     path('cart/', include('cart.urls')),
     path('orders/', include('orders.urls')),
     path('payments/', include('payments.urls')),

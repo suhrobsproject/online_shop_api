@@ -1,17 +1,15 @@
 import re
 from django import forms
 from django.core.exceptions import ValidationError
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, get_user_model
 from .models import CustomUser, Address
 
 
+CustomUser = get_user_model()
+
+
 class CustomUserRegisterForm(forms.ModelForm):
-    role = forms.ChoiceField(
-        choices=CustomUser.ROLE_CHOICES,
-        widget=forms.RadioSelect,
-        initial='customer',
-        label="Kim sifatida ro‘yxatdan o‘tasiz?"
-    )
+    # 'role' maydoni bu yerdan olib tashlandi
     phone_number = forms.CharField(
         max_length=20,
         label="Telefon raqam",
@@ -32,8 +30,8 @@ class CustomUserRegisterForm(forms.ModelForm):
 
     class Meta:
         model = CustomUser
-        # username maydoni olib tashlandi, telefon raqam username o'rniga ishlatiladi
-        fields = ('phone_number', 'email', 'role')
+        # 'role' maydoni fields ro'yxatidan olib tashlandi
+        fields = ('phone_number', 'email')
 
     def clean_phone_number(self):
         raw_phone = self.cleaned_data.get('phone_number', '')
@@ -87,11 +85,15 @@ class CustomUserRegisterForm(forms.ModelForm):
         # Login ishlashi uchun username ga ham telefon raqam o'rnatiladi
         user.username = self.cleaned_data["phone_number"]
         user.set_password(self.cleaned_data["password"])
+        
+        # Har bir ro'yxatdan o'tgan foydalanuvchiga avtomatik 'customer' roli beriladi
+        user.role = 'customer'
+
         if commit:
             user.save()
         return user
 
-
+    
 class CustomUserLoginForm(forms.Form):
     phone_number = forms.CharField(
         max_length=20,

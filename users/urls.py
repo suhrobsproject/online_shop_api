@@ -8,6 +8,7 @@ from .views import (
     AddressListView,
     AddressUpdateView,
     AddressDeleteView,
+    ProfileUpdateView
 )
 
 app_name = 'users'
@@ -20,6 +21,7 @@ urlpatterns = [
 
     # Profil va xavfsizlik
     path('profile/', ProfileView.as_view(), name='profile'),
+    path('profile/update/', ProfileUpdateView.as_view(), name='profile_update'),
     path('password-change/', ChangePasswordView.as_view(), name='change_password'),
 
     # Yetkazib berish manzillari

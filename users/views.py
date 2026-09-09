@@ -10,6 +10,7 @@ from .forms import (
     CustomUserLoginForm,
     CustomUserProfileForm,
     CustomUserChangePasswordForm,
+    UserProfileUpdateForm,
     AddressForm
 )
 
@@ -79,6 +80,28 @@ class ProfileView(LoginRequiredMixin, View):
             return redirect('profile')
         return render(request, self.template_name, {'form': form})
 
+
+
+class ProfileUpdateView(LoginRequiredMixin, View):
+    template_name = 'users/profile_update.html'
+
+    def get(self, request):
+        # Formani foydalanuvchining joriy ma'lumotlari bilan to'ldirib ko'rsatamiz
+        form = UserProfileUpdateForm(instance=request.user)
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        # Kiritilgan yangi ma'lumotlarni qabul qilamiz
+        form = UserProfileUpdateForm(request.POST, instance=request.user)
+        
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profil ma'lumotlaringiz muvaffaqiyatli yangilandi!")
+            # Tahrirlab bo'lgach, asosiy profil sahifasiga qaytarib yuboramiz
+            return redirect('users:profile')
+        
+        # Agar xatolik bo'lsa (masalan email band bo'lsa), formani xatolari bilan birga qaytaramiz
+        return render(request, self.template_name, {'form': form})
 
 class ChangePasswordView(LoginRequiredMixin, View):
     template_name = 'users/change_password.html'
