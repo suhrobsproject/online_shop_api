@@ -1,8 +1,8 @@
 from decimal import Decimal
 from django.db import models
 from django.conf import settings
-from backend.shops.models import BaseModel
-from backend.products.models import ProductVariant
+from shops.models import BaseModel
+from products.models import ProductVariant
 
 
 class Cart(BaseModel):

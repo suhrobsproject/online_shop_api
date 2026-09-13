@@ -5,7 +5,7 @@ from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from .models import Cart, CartItem
 from .serializers import CartSerializer, CartItemSerializer
-from backend.products.models import ProductVariant
+from products.models import ProductVariant
 
 def _get_or_create_cart(request):
     if not request.session.session_key:

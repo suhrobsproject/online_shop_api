@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Comment
-from products.models import Product
-from orders.models import OrderItem, Order
+from backend.products.models import Product
+from backend.orders.models import OrderItem, Order
 
 class CommentSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.phone_number', read_only=True)

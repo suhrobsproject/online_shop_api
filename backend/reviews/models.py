@@ -1,8 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-from shops.models import BaseModel
-from products.models import Product
+from backend.shops.models import BaseModel
+from backend.products.models import Product
 
 
 class Comment(BaseModel):

@@ -90,7 +90,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'onlineshopapi',          # PostgreSQL'da ochilgan baza nomi
         'USER': 'postgres',       # Baza egasi (masalan: postgres yoki o'zingiz ochgan user)
-        'PASSWORD': 'password',    # User paroli
+        'PASSWORD': 'fozilbek',    # User paroli
         'HOST': 'localhost',           # Lokal ishlayotgan bo'lsa
         'PORT': '5432',                # PostgreSQL standart porti
     }
