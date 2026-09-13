@@ -1,80 +1,70 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib import messages
+from rest_framework import permissions, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from .models import Shop
-from .forms import ShopCreateForm, ShopUpdateForm
+from .serializers import ShopSerializer
 
+class ShopListAPIView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
 
-class ShopCreateView(LoginRequiredMixin, View):
-    template_name = 'shops/shop_form.html'
 
     def get(self, request):
-        form = ShopCreateForm()
-        return render(request, self.template_name, {'form': form, 'title': "Yangi do‘kon ochish"})
+        if request.query_params.get('mine') == 'true' and request.user.is_authenticated:
+            shops = Shop.objects.filter(seller=request.user)
+        else:
+            shops = Shop.objects.all()
+        serializer = ShopSerializer(shops, many=True)
+        return Response(serializer.data)
 
     def post(self, request):
-        form = ShopCreateForm(request.POST, request.FILES)
-        if form.is_valid():
-            shop = form.save(commit=False)
-            shop.seller = request.user
-            shop.save()
+        serializer = ShopSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(seller=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-            messages.success(request, f"'{shop.name}' do‘koni ochildi va tekshiruvga yuborildi.")
-            return redirect('shops:my_shops')
+class ShopDetailAPIView(APIView):
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
 
-        return render(request, self.template_name, {'form': form, 'title': "Yangi do‘kon ochish"})
-
-
-class ShopUpdateView(LoginRequiredMixin, View):
-    template_name = 'shops/shop_form.html'
-
-    def get(self, request, slug):
-        # Faqat o'ziga tegishli do'konni tahrirlash imkoniyati
-        shop = get_object_or_404(Shop, slug=slug, seller=request.user)
-        form = ShopUpdateForm(instance=shop)
-        return render(request, self.template_name, {'form': form, 'shop': shop, 'title': "Do‘konni tahrirlash"})
-
-    def post(self, request, slug):
-        shop = get_object_or_404(Shop, slug=slug, seller=request.user)
-        form = ShopUpdateForm(request.POST, request.FILES, instance=shop)
-        if form.is_valid():
-            updated_shop = form.save()
-            messages.success(request, "Do‘kon ma’lumotlari muvaffaqiyatli yangilandi.")
-            return redirect('shops:detail', slug=updated_shop.slug)
-
-        return render(request, self.template_name, {'form': form, 'shop': shop, 'title': "Do‘konni tahrirlash"})
-
-
-class ShopDetailView(View):
-    template_name = 'shops/shop_detail.html'
+    def get_object(self, slug, for_update=False):
+        if for_update:
+            return get_object_or_404(Shop, slug=slug, seller=self.request.user)
+        return get_object_or_404(Shop, slug=slug)
 
     def get(self, request, slug):
-        # Do'kon barcha xaridorlarga ko'rinadi (slug bo'yicha qidiriladi)
-        shop = get_object_or_404(Shop, slug=slug)
-        return render(request, self.template_name, {'shop': shop})
+        shop = self.get_object(slug)
+        serializer = ShopSerializer(shop)
+        return Response(serializer.data)
 
+    def put(self, request, slug):
+        shop = self.get_object(slug, for_update=True)
+        serializer = ShopSerializer(shop, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class MyShopsListView(LoginRequiredMixin, View):
-    template_name = 'shops/my_shops.html'
+    def patch(self, request, slug):
+        shop = self.get_object(slug, for_update=True)
+        serializer = ShopSerializer(shop, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def get(self, request):
-        # Foydalanuvchining faqat o'ziga tegishli do'konlari
-        shops = Shop.objects.filter(seller=request.user)
-        return render(request, self.template_name, {'shops': shops})
-
-
-class ShopDeleteView(LoginRequiredMixin, View):
-    def post(self, request, slug):
-        shop = get_object_or_404(Shop, slug=slug, seller=request.user)
-        shop_name = shop.name
+    def delete(self, request, slug):
+        shop = self.get_object(slug, for_update=True)
+        user = request.user
         shop.delete()
-
-        # Agar sotuvchining boshqa do'koni qolmagan bo'lsa, rolini yana 'customer'ga qaytaramiz
-        if not request.user.shops.exists():
-            request.user.role = 'customer'
-            request.user.save(update_fields=['role'])
-
-        messages.info(request, f"'{shop_name}' do‘koni muvaffaqiyatli o‘chirildi.")
-        return redirect('shops:my_shops')
+        if not user.shops.exists():
+            user.role = 'customer'
+            user.save(update_fields=['role'])
+        return Response(status=status.HTTP_204_NO_CONTENT)

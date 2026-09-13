@@ -1,53 +1,71 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views import View
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib import messages
-
+from rest_framework import permissions, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 from .models import Comment
-from .forms import CommentForm
-from products.models import Product
-from orders.models import OrderItem
+from .serializers import CommentSerializer
+
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user and request.user.is_authenticated
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.user == request.user
+
+class CommentListAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
-class AddCommentView(LoginRequiredMixin, View):
-    """Mahsulot sahifasidan kelgan yangi sharhni saqlash"""
-    def post(self, request, product_id):
-        product = get_object_or_404(Product, pk=product_id)
+    def get(self, request):
+        qs = Comment.objects.all().select_related('user', 'product')
+        product_id = request.query_params.get('product')
+        user_id = request.query_params.get('user')
+        if product_id: qs = qs.filter(product_id=product_id)
+        if user_id: qs = qs.filter(user_id=user_id)
+        serializer = CommentSerializer(qs, many=True)
+        return Response(serializer.data)
 
-        # Xaridor bu mahsulotga oldin sharh qoldirganligini tekshirish
-        if Comment.objects.filter(user=request.user, product=product).exists():
-            messages.warning(request, "Siz ushbu mahsulotga allaqachon sharh qoldirgansiz.")
-            return redirect('products:product_detail', slug=product.slug)
+    def post(self, request):
+        serializer = CommentSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Xaridor haqiqatdan ham ushbu mahsulotni sotib olganini tekshirish
-        has_purchased = OrderItem.objects.filter(
-            order__user=request.user,
-            order__status='delivered',
-            variant__product=product
-        ).exists()
+class CommentDetailAPIView(APIView):
+    permission_classes = [IsOwnerOrReadOnly]
 
-        if not has_purchased:
-            messages.error(request, "Sharh qoldirish uchun mahsulotni avval sotib olgan bo‘lishingiz kerak.")
-            return redirect('products:product_detail', slug=product.slug)
+    def get_object(self, pk):
+        obj = get_object_or_404(Comment, pk=pk)
+        self.check_object_permissions(self.request, obj)
+        return obj
 
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            comment = form.save(commit=False)
-            comment.user = request.user
-            comment.product = product
-            comment.save()
-            messages.success(request, "Sharhingiz qabul qilindi!")
-        else:
-            messages.error(request, "Sharhni saqlashda xatolik yuz berdi.")
+    def get(self, request, pk):
+        obj = self.get_object(pk)
+        serializer = CommentSerializer(obj)
+        return Response(serializer.data)
 
-        return redirect('products:product_detail', slug=product.slug)
+    def put(self, request, pk):
+        obj = self.get_object(pk)
+        serializer = CommentSerializer(obj, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def patch(self, request, pk):
+        obj = self.get_object(pk)
+        serializer = CommentSerializer(obj, data=request.data, partial=True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class DeleteCommentView(LoginRequiredMixin, View):
-    """Foydalanuvchi o'zi qoldirgan sharhni o'chirishi"""
-    def post(self, request, pk):
-        comment = get_object_or_404(Comment, pk=pk, user=request.user)
-        product_slug = comment.product.slug
-        comment.delete()
-        messages.info(request, "Sharhingiz o‘chirildi.")
-        return redirect('products:product_detail', slug=product_slug)
+    def delete(self, request, pk):
+        obj = self.get_object(pk)
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

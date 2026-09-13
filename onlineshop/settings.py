@@ -44,7 +44,12 @@ INSTALLED_APPS = [
     'products',
     'shops',
     'users',
-    'reviews'
+    'reviews',
+
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'drf_yasg',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -83,7 +88,7 @@ WSGI_APPLICATION = 'onlineshop.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'onlineshop',          # PostgreSQL'da ochilgan baza nomi
+        'NAME': 'onlineshopapi',          # PostgreSQL'da ochilgan baza nomi
         'USER': 'postgres',       # Baza egasi (masalan: postgres yoki o'zingiz ochgan user)
         'PASSWORD': 'password',    # User paroli
         'HOST': 'localhost',           # Lokal ishlayotgan bo'lsa
@@ -144,3 +149,21 @@ MAILERS = {
 
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+# DRF Settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+}

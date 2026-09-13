@@ -1,39 +1,38 @@
-"""
-URL configuration for onlineshop project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
-
-from products.views import HomeView
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Online Shop API",
+        default_version='v1',
+        description="Online Shop Teamwork Project API Documentation",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="contact@onlineshop.local"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
-    path('', HomeView.as_view(), name='home'),
     path('admin/', admin.site.urls),
     
-    # Shu 3 ta qatorni qo'shdik:
-    path('users/', include('users.urls')),
-    path('reviews/', include('reviews.urls')),
-    path('cart/', include('cart.urls')),
-    path('orders/', include('orders.urls')),
-    path('payments/', include('payments.urls')),
-    path('products/', include('products.urls')),
-    path('shops/', include('shops.urls')),
+    # API Endpoints
+    path('api/users/', include('users.urls')),
+    path('api/reviews/', include('reviews.urls')),
+    path('api/cart/', include('cart.urls')),
+    path('api/orders/', include('orders.urls')),
+    path('api/payments/', include('payments.urls')),
+    path('api/products/', include('products.urls')),
+    path('api/shops/', include('shops.urls')),
+
+    # Swagger Docs
+    path('api/docs/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
 
 if settings.DEBUG:

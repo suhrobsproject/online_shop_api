@@ -1,31 +1,26 @@
 from django.urls import path
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
-    RegisterView,
-    LoginView,
-    LogoutView,
-    ProfileView,
-    ChangePasswordView,
-    AddressListView,
-    AddressUpdateView,
-    AddressDeleteView,
-    ProfileUpdateView
+    RegisterAPIView,
+    ProfileAPIView,
+    ChangePasswordAPIView,
+    AddressListAPIView,
+    AddressDetailAPIView
 )
 
 app_name = 'users'
 
 urlpatterns = [
-    # Autentifikatsiya
-    path('register/', RegisterView.as_view(), name='register'),
-    path('login/', LoginView.as_view(), name='login'),
-    path('logout/', LogoutView.as_view(), name='logout'),
-
-    # Profil va xavfsizlik
-    path('profile/', ProfileView.as_view(), name='profile'),
-    path('profile/update/', ProfileUpdateView.as_view(), name='profile_update'),
-    path('password-change/', ChangePasswordView.as_view(), name='change_password'),
-
-    # Yetkazib berish manzillari
-    path('addresses/', AddressListView.as_view(), name='address_list'),
-    path('addresses/<int:pk>/edit/', AddressUpdateView.as_view(), name='address_update'),
-    path('addresses/<int:pk>/delete/', AddressDeleteView.as_view(), name='address_delete'),
+    # Auth
+    path('register/', RegisterAPIView.as_view(), name='register'),
+    path('login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    
+    # Profile
+    path('profile/', ProfileAPIView.as_view(), name='profile'),
+    path('password-change/', ChangePasswordAPIView.as_view(), name='password_change'),
+    
+    # Addresses
+    path('addresses/', AddressListAPIView.as_view(), name='address_list'),
+    path('addresses/<int:pk>/', AddressDetailAPIView.as_view(), name='address_detail'),
 ]
