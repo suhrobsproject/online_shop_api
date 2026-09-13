@@ -6,12 +6,14 @@ from users.models import Address
 class OrderCreateForm(forms.ModelForm):
     class Meta:
         model = Order
-        fields = ('address',)
+        fields = ('address', 'payment_method')
         widgets = {
             'address': forms.Select(attrs={'class': 'form-select'}),
+            'payment_method': forms.RadioSelect(attrs={'class': 'form-check-input'})
         }
         labels = {
-            'address': 'Yetkazib berish manzili'
+            'address': 'Yetkazib berish manzili',
+            'payment_method': "To'lov usuli"
         }
 
     def __init__(self, *args, user=None, **kwargs):

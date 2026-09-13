@@ -67,3 +67,13 @@ class Shop(BaseModel):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+        
+        # Do'kon tasdiqlansa, egasini sotuvchiga aylantiramiz
+        if self.is_verified and self.seller.role != 'seller':
+            self.seller.role = 'seller'
+            self.seller.save(update_fields=['role'])
+        # Agar do'kon tasdiqdan o'tmagan yoki bekor qilingan bo'lsa
+        elif not self.is_verified and self.seller.role == 'seller':
+            if not self.seller.shops.filter(is_verified=True).exclude(pk=self.pk).exists():
+                self.seller.role = 'customer'
+                self.seller.save(update_fields=['role'])

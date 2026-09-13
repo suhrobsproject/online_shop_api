@@ -20,8 +20,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 
+from products.views import HomeView
 
 urlpatterns = [
+    path('', HomeView.as_view(), name='home'),
     path('admin/', admin.site.urls),
     
     # Shu 3 ta qatorni qo'shdik:

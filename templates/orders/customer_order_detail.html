@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="breadcrumb-wrap">
+    <div class="container-fluid">
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'orders:customer_orders' %}">Buyurtmalarim</a></li>
+            <li class="breadcrumb-item active">#{{ order.id }}</li>
+        </ul>
+    </div>
+</div>
+<div class="container-fluid mb-5">
+    <div class="row">
+        {% include 'users/profile_sidebar.html' %}
+        <div class="col-md-9">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4>Buyurtma: #{{ order.id }}</h4>
+                    <span class="badge badge-info p-2">{{ order.get_status_display }}</span>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    <p><strong>Sana:</strong> {{ order.created_at|date:"d M Y, H:i" }}</p>
+                    <p><strong>Yetkazib berish manzili:</strong> {{ order.address.region }}, {{ order.address.district }}, {{ order.address.street }}</p>
+                    
+                    <h5 class="mt-4">Sotib olingan tovarlar:</h5>
+                    <table class="table table-bordered mt-2">
+                        <thead>
+                            <tr>
+                                <th>Mahsulot</th>
+                                <th>Sotuvchi</th>
+                                <th>Narx</th>
+                                <th>Soni</th>
+                                <th>Jami</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td><a href="{% url 'products:product_detail' item.variant.product.slug %}">{{ item.variant.product.title }}</a></td>
+                                <td>{{ item.shop.name }}</td>
+                                <td>${{ item.price }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>${{ item.subtotal }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    <h4 class="text-right mt-3">Umumiy to'lov: ${{ order.total_price }}</h4>
+                    
+                    <!-- Agar to'lov tizimi bo'lsa, shu yerga ulanadi -->
+                    <div class="text-right mt-4">
+                        {% if order.status == 'pending' %}
+                        <a href="#" class="btn btn-success btn-lg">To'lov qilish (Yaqinda qo'shiladi)</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

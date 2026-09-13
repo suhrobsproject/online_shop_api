@@ -50,6 +50,21 @@ class Order(BaseModel):
         verbose_name="Yetkazib berish manzili"
     )
 
+
+    class PaymentMethodChoices(models.TextChoices):
+        CLICK = 'click', 'Click'
+        PAYME = 'payme', 'Payme'
+        UZCARD = 'uzcard', 'Uzcard / Humo'
+        VISA = 'visa', 'Visa / Mastercard'
+        CASH = 'cash', 'Naqd pul'
+
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PaymentMethodChoices.choices,
+        default=PaymentMethodChoices.CASH,
+        verbose_name="To'lov turi"
+    )
+
     class Meta:
         db_table = 'order'
         verbose_name = "Buyurtma"

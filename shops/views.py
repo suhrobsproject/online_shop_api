@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-
 from .models import Shop
 from .forms import ShopCreateForm, ShopUpdateForm
 
@@ -21,10 +20,6 @@ class ShopCreateView(LoginRequiredMixin, View):
             shop.seller = request.user
             shop.save()
 
-            # Agar foydalanuvchi roli hali 'seller' bo'lmasa, yangilaymiz
-            if request.user.role != 'seller':
-                request.user.role = 'seller'
-                request.user.save(update_fields=['role'])
 
             messages.success(request, f"'{shop.name}' do‘koni ochildi va tekshiruvga yuborildi.")
             return redirect('shops:my_shops')

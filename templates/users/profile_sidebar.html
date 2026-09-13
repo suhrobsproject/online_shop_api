@@ -1,0 +1,19 @@
+<div class="col-md-3">
+    <div class="list-group mb-4">
+        <a href="{% url 'users:profile' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">Mening Profilim</a>
+        <a href="{% url 'users:profile_update' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'profile_update' %}active{% endif %}">Profilni Tahrirlash</a>
+        <a href="{% url 'users:address_list' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'address_list' or request.resolver_match.url_name == 'address_update' %}active{% endif %}">Manzillarim</a>
+        <a href="{% url 'orders:customer_orders' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'customer_orders' or request.resolver_match.url_name == 'customer_order_detail' %}active{% endif %}">Buyurtmalarim</a>
+        <a href="{% url 'users:change_password' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'change_password' %}active{% endif %}">Parolni O'zgartirish</a>
+        
+        <div class="list-group-item list-group-item-secondary mt-3"><strong>Sotuvchi bo'limi</strong></div>
+        <a href="{% url 'shops:my_shops' %}" class="list-group-item list-group-item-action {% if request.resolver_match.app_name == 'shops' %}active{% endif %}">Mening Do'konlarim</a>
+        
+        {% if request.user.role == 'seller' %}
+        <a href="{% url 'products:seller_products' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'seller_products' or request.resolver_match.url_name == 'product_create' %}active{% endif %}">Mahsulotlarim</a>
+        <a href="{% url 'orders:seller_orders' %}" class="list-group-item list-group-item-action {% if request.resolver_match.url_name == 'seller_orders' %}active{% endif %}">Mijozlar Buyurtmalari</a>
+        {% endif %}
+        
+        <a href="{% url 'users:logout' %}" class="list-group-item list-group-item-action text-danger mt-3">Chiqish</a>
+    </div>
+</div>

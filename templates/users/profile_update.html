@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="breadcrumb-wrap">
+    <div class="container-fluid">
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active">Profilni Tahrirlash</li>
+        </ul>
+    </div>
+</div>
+<div class="container-fluid mb-5">
+    <div class="row">
+        {% include 'users/profile_sidebar.html' %}
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Profilni Tahrirlash</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row">
+                            {% for field in form %}
+                            <div class="col-md-6 mb-3">
+                                <label>{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <small class="text-danger">{{ field.errors.0 }}</small>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            <div class="col-md-12 mt-3">
+                                <button type="submit" class="btn btn-primary">Saqlash</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

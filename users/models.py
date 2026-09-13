@@ -83,6 +83,15 @@ class CustomUser(AbstractUser, BaseModel):
     def __str__(self):
         return f"{self.phone_number} ({self.get_role_display()})"
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Agar admin foydalanuvchini to'g'ridan-to'g'ri 'seller' qilsa, uning barcha do'konlari tasdiqlangan holatga o'tadi
+        if self.role == 'seller':
+            self.shops.filter(is_verified=False).update(is_verified=True)
+        # Agar uni qayta 'customer' qilsa, do'konlari bekor qilinadi
+        elif self.role == 'customer':
+            self.shops.filter(is_verified=True).update(is_verified=False)
+
     
 class Address(models.Model):
 

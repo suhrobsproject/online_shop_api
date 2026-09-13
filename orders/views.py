@@ -20,7 +20,7 @@ class OrderCreateView(LoginRequiredMixin, View):
     template_name = 'orders/order_create.html'
 
     def get(self, request):
-        cart_items = CartItem.objects.filter(user=request.user).select_related('variant__product', 'variant__product__shop')
+        cart_items = CartItem.objects.filter(cart__user=request.user).select_related('variant__product', 'variant__product__shop')
         if not cart_items.exists():
             messages.warning(request, "Savatchangiz bo'sh. Buyurtma berish uchun mahsulot tanlang.")
             return redirect('cart:cart_detail')
@@ -35,7 +35,7 @@ class OrderCreateView(LoginRequiredMixin, View):
         })
 
     def post(self, request):
-        cart_items = CartItem.objects.filter(user=request.user).select_related('variant__product__shop')
+        cart_items = CartItem.objects.filter(cart__user=request.user).select_related('variant__product__shop')
         if not cart_items.exists():
             messages.warning(request, "Savatchangiz bo'sh.")
             return redirect('cart:cart_detail')

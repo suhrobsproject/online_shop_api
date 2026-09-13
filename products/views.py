@@ -1,11 +1,39 @@
+from django.db.models import F
+from reviews.forms import CommentForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View
+from django.core.paginator import Paginator
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.db import transaction
 from .models import Category, Product, ProductVariant, ProductImage
 from .forms import ProductForm, ProductVariantFormSet, ProductImageFormSet
 
+
+
+
+
+class HomeView(View):
+    template_name = 'index.html'
+
+    def get(self, request):
+        categories = Category.objects.filter(parent=None).prefetch_related('children')
+        
+        # Asosiy mahsulotlar (yangi qo'shilganlar)
+        recent_products = Product.objects.filter(shop__is_verified=True).select_related('shop', 'category').prefetch_related('images', 'variants').order_by('-created_at')[:8]
+        
+        # Chegirmadagi mahsulotlar: variantlarida old_price qiymati null emas va price'dan katta
+        discounted_products = Product.objects.filter(
+            shop__is_verified=True, 
+            variants__old_price__isnull=False,
+            variants__old_price__gt=F('variants__price')
+        ).select_related('shop', 'category').prefetch_related('images', 'variants').distinct()[:8]
+
+        return render(request, self.template_name, {
+            'categories': categories,
+            'recent_products': recent_products,
+            'discounted_products': discounted_products,
+        })
 
 
 
@@ -54,25 +82,33 @@ class CategoryProductsView(View):
 
 
 class ProductListView(View):
-    template_name = 'products/product_list.html'
+    template_name = 'product-list.html'
 
     def get(self, request):
         category_slug = request.GET.get('category')
+        search_query = request.GET.get('q', '')
         
-        # Baza optimizatsiyasi: shop, category, asosiy rasm va variantlarni bitta so'rovda tortib olish
         products = Product.objects.filter(shop__is_verified=True).select_related('shop', 'category').prefetch_related('images', 'variants')
+        
+        if search_query:
+            products = products.filter(title__icontains=search_query)
 
         current_category = None
         if category_slug:
             current_category = get_object_or_404(Category, slug=category_slug)
             products = products.filter(category=current_category)
 
+        paginator = Paginator(products, 9)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+
         categories = Category.objects.filter(parent=None).prefetch_related('children')
 
         return render(request, self.template_name, {
-            'products': products,
+            'products': page_obj,
             'categories': categories,
-            'current_category': current_category
+            'current_category': current_category,
+            'search_query': search_query,
         })
 
 
@@ -85,7 +121,8 @@ class ProductDetailView(View):
             Product.objects.select_related('shop', 'category').prefetch_related('images', 'variants'),
             slug=slug
         )
-        return render(request, self.template_name, {'product': product})
+        form = CommentForm()
+        return render(request, self.template_name, {'product': product, 'comment_form': form})
 
 
 # ---------------- SOTUVCHILAR UCHUN CRUD (VENDOR) ---------------- #
@@ -103,9 +140,9 @@ class ProductCreateView(LoginRequiredMixin, View):
     template_name = 'products/product_form.html'
 
     def get(self, request):
-        if not request.user.shops.exists():
-            messages.warning(request, "Mahsulot qo'shishdan oldin kamida bitta do'kon ochishingiz kerak.")
-            return redirect('shops:create')
+        if not request.user.shops.filter(is_verified=True).exists():
+            messages.warning(request, "Sizda tasdiqlangan do'kon yo'q! Admin do'koningizni tasdiqlagandan so'ng mahsulot qo'sha olasiz.")
+            return redirect('shops:my_shops')
 
         form = ProductForm(user=request.user)
         variant_formset = ProductVariantFormSet(prefix='variants')
@@ -147,6 +184,10 @@ class ProductUpdateView(LoginRequiredMixin, View):
     template_name = 'products/product_form.html'
 
     def get(self, request, slug):
+        if not request.user.shops.filter(is_verified=True).exists():
+            messages.warning(request, "Sizning do'koningiz hozirda faol emas yoki tasdiqlanmagan.")
+            return redirect('shops:my_shops')
+            
         # Faqat o'ziga tegishli mahsulotni tahrirlay olishi kerak
         product = get_object_or_404(Product, slug=slug, shop__seller=request.user)
         form = ProductForm(instance=product, user=request.user)

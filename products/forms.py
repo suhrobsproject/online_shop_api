@@ -18,7 +18,7 @@ class ProductForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Sotuvchi faqat o'ziga tegishli do'konlarni tanlay olishi uchun filtr
         if user is not None:
-            self.fields['shop'].queryset = user.shops.all()
+            self.fields['shop'].queryset = user.shops.filter(is_verified=True)
 
 
 class ProductVariantForm(forms.ModelForm):

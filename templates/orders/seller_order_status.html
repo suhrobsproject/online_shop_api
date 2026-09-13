@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="breadcrumb-wrap">
+    <div class="container-fluid">
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'orders:seller_orders' %}">Mijozlar Buyurtmalari</a></li>
+            <li class="breadcrumb-item active">Holatni Yangilash</li>
+        </ul>
+    </div>
+</div>
+<div class="container-fluid mb-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Buyurtma #{{ order.id }} Holatini Yangilash</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <p><strong>Mijoz:</strong> {{ order.user.first_name }} {{ order.user.last_name }} ({{ order.user.phone_number }})</p>
+                        <p><strong>Manzil:</strong> {{ order.address }}</p>
+                        <p><strong>Joriy holat:</strong> <span class="badge badge-info">{{ order.get_status_display }}</span></p>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="{{ form.status.id_for_label }}">{{ form.status.label }}</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <small class="text-danger">{{ form.status.errors.0 }}</small>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Saqlash</button>
+                        <a href="{% url 'orders:seller_orders' %}" class="btn btn-secondary mt-3">Bekor qilish</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

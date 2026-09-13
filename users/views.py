@@ -62,7 +62,7 @@ class LogoutView(View):
     def get(self, request):
         logout(request)
         messages.info(request, "Tizimdan muvaffaqiyatli chiqdingiz.")
-        return redirect('login')
+        return redirect('users:login')
 
 
 class ProfileView(LoginRequiredMixin, View):
@@ -77,7 +77,7 @@ class ProfileView(LoginRequiredMixin, View):
         if form.is_valid():
             form.save()
             messages.success(request, "Profil ma'lumotlaringiz yangilandi!")
-            return redirect('profile')
+            return redirect('users:profile')
         return render(request, self.template_name, {'form': form})
 
 
@@ -117,7 +117,7 @@ class ChangePasswordView(LoginRequiredMixin, View):
             # Parol almashganda foydalanuvchini sessiyadan chiqarib yubormaslik uchun
             update_session_auth_hash(request, user)
             messages.success(request, "Parolingiz muvaffaqiyatli o'zgartirildi!")
-            return redirect('profile')
+            return redirect('users:profile')
         return render(request, self.template_name, {'form': form})
 
 
@@ -139,7 +139,7 @@ class AddressListView(LoginRequiredMixin, View):
             address.user = request.user
             address.save()
             messages.success(request, "Yangi manzil muvaffaqiyatli qo'shildi.")
-            return redirect('address_list')
+            return redirect('users:address_list')
         
         addresses = Address.objects.filter(user=request.user)
         return render(request, self.template_name, {
@@ -162,7 +162,7 @@ class AddressUpdateView(LoginRequiredMixin, View):
         if form.is_valid():
             form.save()
             messages.success(request, "Manzil yangilandi.")
-            return redirect('address_list')
+            return redirect('users:address_list')
         return render(request, self.template_name, {'form': form, 'address': address})
 
 
@@ -171,4 +171,4 @@ class AddressDeleteView(LoginRequiredMixin, View):
         address = get_object_or_404(Address, pk=pk, user=request.user)
         address.delete()
         messages.success(request, "Manzil o'chirildi.")
-        return redirect('address_list')
+        return redirect('users:address_list')

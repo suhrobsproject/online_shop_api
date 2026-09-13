@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="breadcrumb-wrap">
+    <div class="container-fluid">
+        <ul class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+            <li class="breadcrumb-item active">Mening Profilim</li>
+        </ul>
+    </div>
+</div>
+<div class="container-fluid mb-5">
+    <div class="row">
+        {% include 'users/profile_sidebar.html' %}
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Profil Ma'lumotlari</h4>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="30%">Telefon raqam</th>
+                            <td>{{ user.phone_number }}</td>
+                        </tr>
+                        <tr>
+                            <th>Ism</th>
+                            <td>{{ user.first_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Familiya</th>
+                            <td>{{ user.last_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Email</th>
+                            <td>{{ user.email|default:"Kiritilmagan" }}</td>
+                        </tr>
+                    </table>
+                    <a href="{% url 'users:profile_update' %}" class="btn btn-primary mt-3">Tahrirlash</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

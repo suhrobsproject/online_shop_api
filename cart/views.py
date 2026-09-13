@@ -86,6 +86,10 @@ class UpdateCartItemView(View):
                 cart_item.quantity = new_quantity
                 cart_item.save(update_fields=['quantity'])
                 messages.success(request, "Miqdor yangilandi.")
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
 
         return redirect('cart:cart_detail')
 

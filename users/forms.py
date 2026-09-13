@@ -111,6 +111,12 @@ class CustomUserLoginForm(forms.Form):
 
     def clean_phone_number(self):
         raw_phone = self.cleaned_data.get('phone_number', '')
+        
+        # Agar bu raqam bo'lmasa yoki qisqa bo'lsa (masalan: "admin", "superuser"),
+        # uni to'g'ridan-to'g'ri qaytaramiz (admin tizimga kira olishi uchun)
+        if not any(char.isdigit() for char in raw_phone) or len(raw_phone) < 9:
+            return raw_phone.strip()
+
         clean_phone = re.sub(r'[^\d+]', '', raw_phone)
 
         if clean_phone.startswith('998'):
@@ -118,8 +124,10 @@ class CustomUserLoginForm(forms.Form):
         elif len(clean_phone) == 9 and not clean_phone.startswith('+'):
             clean_phone = '+998' + clean_phone
 
+        # Raqamli kiritishlar uchun qat'iy tekshiruv, lekin superuserlar
+        # maxsus foydalanuvchi nomlari bilan ham kirishi mumkinligiga ruxsat beramiz.
         if len(clean_phone) != 13 or not clean_phone.startswith('+998'):
-            raise ValidationError("Telefon raqami noto‘g‘ri formatda kiritildi.")
+            return raw_phone.strip() # Xato berish o'rniga asl kiritilganini qaytaramiz, shunda authenticate() tekshiradi.
 
         return clean_phone
 
