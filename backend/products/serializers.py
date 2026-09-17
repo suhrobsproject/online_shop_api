@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Category, Product, ProductVariant, ProductImage
-from backend.shops.models import Shop
+from shops.models import Shop
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
