@@ -1,4 +1,4 @@
-import { getProducts } from "@/lib/axios";
+import { getProducts } from "@/services/products";
 
 export default async function HomePage() {
   const data = await getProducts();
