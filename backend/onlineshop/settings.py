@@ -90,7 +90,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'onlineshopapi',          # PostgreSQL'da ochilgan baza nomi
         'USER': 'postgres',       # Baza egasi (masalan: postgres yoki o'zingiz ochgan user)
-        'PASSWORD': 'fozilbek',    # User paroli
+        'PASSWORD': 'password',    # User paroli
         'HOST': 'localhost',           # Lokal ishlayotgan bo'lsa
         'PORT': '5432',                # PostgreSQL standart porti
     }
@@ -167,3 +167,4 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': False,
 }
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
