@@ -3,7 +3,6 @@ import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 import Navbar from "@/components/shared/Navbar";
-import MobileBottomMenu from "@/components/shared/MobileBottomMenu";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -19,10 +18,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={cn("h-full", "antialiased", "font-sans", geist.variable)}
     >
       <body className="min-h-full">
-        <div className="custom-container flex flex-col">
+        <div className="custom-container flex flex-col h-screen">
           <Navbar />
-          <main className="flex-1">{children}</main>
-          {/* <MobileBottomMenu /> */}
+          <main className="flex-1 h-screen">{children}</main>
         </div>
       </body>
     </html>
